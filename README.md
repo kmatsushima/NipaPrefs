@@ -2,7 +2,7 @@ https://github.com/fuqunaga/PrefsGUI のようにUnityのランタイム上で�
 
 
 
-![edit.png](Docs\edit.png)
+![edit.png](Docs/edit.png)
 
 
 設定値の閲覧、ヒントの表示、編集、リセット、保存などが行える。
@@ -13,15 +13,15 @@ https://github.com/fuqunaga/PrefsGUI のようにUnityのランタイム上で�
 設定値は初期化時に所属するマネージャID、設定値のID,デフォルト値、ヒント（オプショナル）を与える。
 
 
-![inspector.png](Docs\inspector.png)
+![inspector.png](Docs/inspector.png)
 
 マネージャごとにエディタとスタンドアロンでの設定ファイルのパスを設定できる。複数のマネージャを用意する事で複数の設定ファイルを運用できる。
 
-![mgr.png](Docs\mgr.png)
+![mgr.png](Docs/mgr.png)
 
 設定値は個別にGUIで呼び出すことで編集できる他、マネージャのウインドウではそのマネージャに所属する設定値すべてを閲覧・編集することもできる。
 
 
-![xml.png](Docs\xml.png)
+![xml.png](Docs/xml.png)
 
 直接設定ファイルのXMLを編集する場合に備えて、ヒントを設定ファイルに書き込むこともできる
