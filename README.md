@@ -8,7 +8,7 @@ https://github.com/fuqunaga/PrefsGUI のようにUnityのランタイム上で�
 設定値の閲覧、ヒントの表示、編集、リセット、保存などが行える。
 
 ```` csharp
-    public static NipaFloat speed = new NipaFloat(DemoParam.TRANSPORT_PREFS, "jeepSpeed", 5f, "ジープのスピード");
+    public NipaFloat speed = new NipaFloat("transportSetting", "jeepSpeed", 5f, "ジープのスピード");
 ````
 設定値は初期化時に所属するマネージャID、設定値のID,デフォルト値、ヒント（オプショナル）を与える。
 
