@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<transportPrefs>
+  <!--_jeepIsActive_ ジープが動くか-->
+  <jeepIsActive>true</jeepIsActive>
+  <!--_jeepSpeed_ ジープの速さ-->
+  <jeepSpeed>5</jeepSpeed>
+  <!--_jeepRotSpeed_ ジープの回転の速さ [float]-->
+  <jeepRotSpeed>2</jeepRotSpeed>
+  <!--_goalUpdateInterval_ 移動目標の更新頻度（秒）-->
+  <goalUpdateInterval>5</goalUpdateInterval>
+  <!--_smokeColor_  [color. RGBA e.g. 240,180,180,0.5 (RGB:0~255, A:0~1) or HTML code e.g. #FF5733 e.g. #FF42429B or HTML code and alpha e.g. #FF5733, 0.5]-->
+  <smokeColor>255,235,4,1</smokeColor>
+  <!--_altitude_  [float]-->
+  <altitude>10</altitude>
+  <!--_jeepCount_  [int]-->
+  <jeepCount>10</jeepCount>
+</transportPrefs>

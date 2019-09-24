@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<enviromentPrefs>
+  <!--_buildingScale_ scale of building xyz [vector(x,y,z,w). e.g. 5, 2.5, 10 e.g. 11, 5]-->
+  <buildingScale>2,11.54193,2,0</buildingScale>
+  <!--_buildingColor_ color of building [color. RGBA e.g. 240,180,180,0.5 (RGB:0~255, A:0~1) or HTML code e.g. #FF5733 e.g. #FF42429B or HTML code and alpha e.g. #FF5733, 0.5]-->
+  <buildingColor>138.1989,231.1452,127.5,1</buildingColor>
+  <!--_buildingPosition_ position of building xyz [vector(x,y,z,w). e.g. 5, 2.5, 10 e.g. 11, 5]-->
+  <buildingPosition>0,0,0,0</buildingPosition>
+  <!--_signTitle_  [string]-->
+  <signTitle>NIP57A Inc.</signTitle>
+</enviromentPrefs>
