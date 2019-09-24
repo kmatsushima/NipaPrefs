@@ -14,4 +14,6 @@
   <altitude>10</altitude>
   <!--_jeepCount_  [int]-->
   <jeepCount>10</jeepCount>
+  <!--_test_ ジープの回転の速さ [vector(x,y,z,w). e.g. 5, 2.5, 10 e.g. 11, 5]-->
+  <test>1,1,1,0</test>
 </transportPrefs>
