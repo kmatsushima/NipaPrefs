@@ -18,8 +18,6 @@ namespace Nipa.Demo
 
         IEnumerator Start()
         {
-            Vector2 s = test;
-            Debug.Log(test);
             while (true)
             {
                 yield return new WaitForSeconds(5f);

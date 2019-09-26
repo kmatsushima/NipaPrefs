@@ -12,12 +12,12 @@ namespace NipaPrefs.Hidden
         protected string tip = "";
         protected float min;
         protected float max;
-        protected bool isInitialized;
 
         string managerId;
         NipaPrefsManager manager;
         bool isEditMode;
         bool isTipShown;
+        bool initialized;
         T savedValue;
         Color guiColor;
 
@@ -28,12 +28,14 @@ namespace NipaPrefs.Hidden
             this.savedValue = this.value;
             this.tip = tip;
             this.managerId = managerId;
+            if (NipaPrefsManagerInterface.GetManager(managerId, out manager))
+                Initialize();
+            else
+                NipaPrefsManagerInterface.OnManagerReady += LazyInitialize; 
         }
 
         public void OnGUISlider(float min, float max, string title = "")
         {
-            if (!isInitialized)
-                Initialize();
             this.min = min;
             this.max = max;
             GuiContent(true, title);
@@ -41,9 +43,6 @@ namespace NipaPrefs.Hidden
 
         public void OnGUI(string title = "")
         {
-            if (!isInitialized)
-                Initialize();
-
             GuiContent(false, title);
         }
 
@@ -118,15 +117,20 @@ namespace NipaPrefs.Hidden
 
         public void Set(T value)
         {
-            if (!isInitialized)
-                Initialize();
             this.value = value;
         }
 
         public T Get()
         {
-            if (!isInitialized)
-                Initialize();
+            if (!initialized) // this can be happen, when Get() is called BEFORE the manager gets ready and LazyInitialize is called.
+            {
+                var mgr = NipaPrefsManagerInterface.GetManager(managerId);
+                if (mgr != null)
+                    LazyInitialize(mgr); //call LazyInitialize to unsubscribe event
+                else
+                    Debug.LogErrorFormat("[NipaPrefs] value id {0} failed to find its manager {1}", id, managerId);
+            }
+
             return value;
         }
 
@@ -135,16 +139,20 @@ namespace NipaPrefs.Hidden
             return me.Get();
         }
 
-        protected void Initialize()
+        void LazyInitialize(NipaPrefsManager mgr)
         {
-            manager = NipaPrefsManagerInterface.GetManager(managerId);
-            if (manager == null)
+            if (initialized)
+                NipaPrefsManagerInterface.OnManagerReady -= LazyInitialize;
+            else if (mgr.id == managerId)
             {
-                isInitialized = true;
-                Debug.LogError(string.Format("[NipaPrefs] value id {0} failed to find its manager {1}", id, managerId));
-                return;
+                NipaPrefsManagerInterface.OnManagerReady -= LazyInitialize;
+                manager = mgr;
+                Initialize();
             }
+        }
 
+        void Initialize()
+        {
             string raw;
             if (manager.GetValue(id, out raw))
                 RawValueToValue(raw);
@@ -152,8 +160,8 @@ namespace NipaPrefs.Hidden
                 value = defaultValue;
             savedValue = value;
             UpdateField(value);
-            manager.RegisterEditGui(() => GuiContent(false, ""));
-            manager.OnSaveAll += () =>
+            manager.RegisterEditGui(id, () => GuiContent(false, ""));
+            manager.OnSave += () =>
             {
                 if (IsFiledValid())
                 {
@@ -173,7 +181,12 @@ namespace NipaPrefs.Hidden
                     if (manager.GetValue(id, out raw))
                         RawValueToValue(raw);
                 };
-            isInitialized = true;
+            manager.OnReset += () =>
+            {
+                value = defaultValue;
+                UpdateField(value);
+            };
+            initialized = true;
         }
 
         protected abstract void GuiHeader();

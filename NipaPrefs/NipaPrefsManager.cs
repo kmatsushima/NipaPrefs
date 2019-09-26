@@ -9,26 +9,29 @@ using NipaPrefs.Hidden;
 
 namespace NipaPrefs
 {
-
     public class NipaPrefsManager : MonoBehaviour
     {
-
-
-        public event Action OnSaveAll;
+        public event Action OnSave;
         public event Action OnWriteTips;
         public event Action OnPrefsUpdated;
+        public event Action OnReset;
         public event Action OnLoad;
-
         public string id;
-
 
         [SerializeField, HeaderAttribute("Editor Path")]
         PathProvider.EditorRootDirectroy rootDirEditor;
-        ///<summary> e.g Settings/MySetting.xml </summary>
-        [SerializeField] string filePathFromRootDirEditor;
+        ///<summary> path of parent dir of file from root dir, can be empty. e.g. Main/Prefs </summary>
+        [SerializeField] string parentDirPathFromRootDirEditor = "";
+        ///<summary> e.g. MySetting.xml </summary>
+        [SerializeField] string fileNameWithExtensionEditor;
+
         [SerializeField, HeaderAttribute("Standalone Path")]
         PathProvider.StandaloneRootDirectroy rootDirStandalone;
-        [SerializeField] string filePathFromRootDirStandalone;
+        ///<summary> path of parent dir of file from root dir, can be empty. e.g. Prefs </summary>
+        [SerializeField] string parentDirPathFromRootDirStandalone = "";
+        ///<summary> e.g. MySetting.xml </summary>
+        [SerializeField] string fileNameWithExtensionEditorStandalone;
+
         ///<summary> enable invoking event OnPrefsUpdated, so  listeners update its nornaml value according to NipaValue </summary>
         public bool enableManualUpdate = false;
         ///<summary> enable load values from setting file manualy. otherwise, value is loaded when it is accessed </summary>
@@ -36,6 +39,7 @@ namespace NipaPrefs
         public int guiLayoutWindowId;
         public Rect windowRect = new Rect(0, 0, 500, 500);
         public float valueEditorHeight = 300f;
+
 
         string path = "";
         string dirPath;
@@ -45,39 +49,27 @@ namespace NipaPrefs
         XElement root;
         bool isMenuActive;
         bool isEditMode;
-        List<Action> guiOfValues = new List<Action>();
+        bool isFileExists;
+        Dictionary<string, Action> valueIdAndGuis = new Dictionary<string, Action>();
 
-        public void Load()
+        #region < PUBLIC >=========================================================================================================================< PUBLIC >
+
+        #region ===============================================  Nipa value management
+
+
+        public void RegisterEditGui(string id, Action gui)
         {
-            var content = System.IO.File.ReadAllText(path);
-
-            rootExist = content.Contains(this.id);
-            if (rootExist)
-            {
-                xml = XDocument.Parse(content);
-                root = xml.Element(this.id);
-            }
-        }
-
-        public void RegisterEditGui(Action gui)
-        {
-            guiOfValues.Add(gui);
+            if (!valueIdAndGuis.ContainsKey(id))
+                valueIdAndGuis.Add(id, gui);
+            else
+                valueIdAndGuis[id] = gui; //constractor of nipa value with initializer  in monobehavior can be called several times 
         }
 
         public bool GetValue(string id, out string rawValue)
         {
             if (!firstLoadDone)
             {
-                if (path == "")
-                {
-#if UNITY_EDITOR
-                    path = PathProvider.GetPath(rootDirEditor, filePathFromRootDirEditor);
-#else
-                   path = PathProvider.GetPath(rootDirStandalone, filePathFromRootDirStandalone);
-#endif
-                    CheckPath();
-                }
-
+                GeneratePath();
                 Load();
                 firstLoadDone = true;
             }
@@ -94,10 +86,8 @@ namespace NipaPrefs
         public void SaveRawValue(string id, string rawValue)
         {
             if (!firstLoadDone)
-            {
-                CheckPath();
                 Load();
-            }
+
             if (!rootExist)
             {
                 xml = new XDocument();
@@ -109,18 +99,45 @@ namespace NipaPrefs
                 root.Add(new XElement(id));
 
             root.Element(id).Value = rawValue;
+
+            if (!isFileExists)
+            {
+                dirPath = Path.GetDirectoryName(path);
+                System.IO.Directory.CreateDirectory(dirPath);
+                var stream = System.IO.File.Create(path);
+                stream.Dispose();
+                isFileExists = true;
+            }
+
             xml.Save(path);
+        }
+
+        #endregion
+        #region ===============================================  Manager action
+
+        public void Load()
+        {
+            isFileExists = System.IO.File.Exists(path);
+            if (isFileExists)
+            {
+                var content = System.IO.File.ReadAllText(path);
+                rootExist = content.Contains(this.id);
+                if (rootExist)
+                {
+                    xml = XDocument.Parse(content);
+                    root = xml.Element(this.id);
+                }
+            }
+            else
+            {
+                xml = new XDocument();
+                rootExist = false;
+            }
         }
 
         public void WriteTip(string id, string tip)
         {
             TipWriter.WriteTipOnFile(path, id, tip);
-        }
-
-        public void SetFilePath(string path)
-        {
-            this.path = path;
-            CheckPath();
         }
 
         public void ToggleMenu(bool active)
@@ -133,28 +150,9 @@ namespace NipaPrefs
             OnPrefsUpdated?.Invoke();
         }
 
-        void CheckPath()
-        {
-            dirPath = Path.GetDirectoryName(path); Debug.Log(dirPath);
-            if (!System.IO.File.Exists(path))
-            {
-                System.IO.Directory.CreateDirectory(dirPath);
-                var stream = System.IO.File.Create(path);
-                stream.Dispose();
-            }
-        }
-
-        Vector2 scroll;
-
-        void OnGUI()
-        {
-            if (isMenuActive)
-                windowRect = GUILayout.Window(guiLayoutWindowId, windowRect, DebugWindow, string.Format("NipaPrefsMgr : {0}", id), GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false));
-        }
-
         public void SaveAll()
         {
-            OnSaveAll?.Invoke();
+            OnSave?.Invoke();
         }
 
         public void WriteTip()
@@ -163,6 +161,105 @@ namespace NipaPrefs
             xml = XDocument.Load(path);
             root = xml.Element(this.id);
         }
+
+        public void ResetAll()
+        {
+            OnReset?.Invoke();
+        }
+
+        #endregion
+        #region ===============================================  Path 
+
+        public string GetFullFilePath()
+        {
+            return path;
+        }
+
+        public void SetFullFilePath(string path)
+        {
+            this.path = path;
+            isFileExists = System.IO.File.Exists(path);
+        }
+
+        public string parentDirPathFromRootDir
+        {
+            get
+            {
+
+#if UNITY_EDITOR
+                return parentDirPathFromRootDirEditor;
+#else
+                return parentDirPathFromRootDirStandalone;
+#endif
+            }
+            set
+            {
+
+#if UNITY_EDITOR
+                parentDirPathFromRootDirEditor = value;
+                GeneratePath();
+#else
+                parentDirPathFromRootDirStandalone = value;
+               GeneratePath();
+#endif
+            }
+        }
+
+        public string fileNameWithExtension
+        {
+            get
+            {
+
+#if UNITY_EDITOR
+                return fileNameWithExtensionEditor;
+#else
+                return fileNameWithExtensionEditorStandalone;
+#endif
+            }
+            set
+            {
+
+#if UNITY_EDITOR
+                fileNameWithExtensionEditor = value;
+                GeneratePath();
+#else
+                fileNameWithExtensionEditorStandalone = value;
+               GeneratePath();
+#endif
+            }
+        }
+
+
+        #endregion
+
+        #endregion
+        #region < private >=========================================================================================================================< private >
+
+        private void Awake()
+        {
+            NipaPrefsManagerInterface.RegisterManger(this);
+        }
+
+        void GeneratePath()
+        {
+#if UNITY_EDITOR
+            path = PathProvider.GetPath(rootDirEditor, parentDirPathFromRootDirEditor, fileNameWithExtensionEditor);
+#else
+                   path = PathProvider.GetPath(rootDirStandalone, parentDirPathFromRootDirStandalone, fileNameWithExtensionEditorStandalone);
+#endif
+            isFileExists = System.IO.File.Exists(path);
+        }
+
+        Vector2 scroll;
+
+        #region ===============================================  GUI
+
+        void OnGUI()
+        {
+            if (isMenuActive)
+                windowRect = GUILayout.Window(guiLayoutWindowId, windowRect, DebugWindow, string.Format("NipaPrefsMgr : {0}", id), GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false));
+        }
+
 
         public void DebugWindow(int id)
         {
@@ -175,38 +272,41 @@ namespace NipaPrefs
             GUILayout.BeginVertical();
             GUILayout.Label("file path : " + path);
 
-            var fileExist = File.Exists(path);
-
-            if (fileExist && GUILayout.Button("Open XML file"))
+            GUILayout.BeginHorizontal();
+            if (isFileExists && GUILayout.Button("Open XML file"))
                 System.Diagnostics.Process.Start(path);
-            if (fileExist && GUILayout.Button("Open directory"))
+            if (isFileExists && GUILayout.Button("Open directory"))
                 System.Diagnostics.Process.Start(dirPath);
-            if (enableManualUpdate && GUILayout.Button("Apply all values"))
-                ManualUpdate();
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            isEditMode = GUILayout.Toggle(isEditMode, "Show all values");
-            GUILayout.FlexibleSpace();
+            if (enableManualUpdate && GUILayout.Button("Apply all values"))
+                ManualUpdate();
             if (enableManualLoad && GUILayout.Button("Load"))
                 OnLoad?.Invoke();
             if (GUILayout.Button("Save all"))
                 SaveAll();
-            if (fileExist && rootExist && GUILayout.Button("Write tips"))
+            if (isFileExists && rootExist && GUILayout.Button("Write tips"))
                 WriteTip();
-            if (fileExist && GUILayout.Button("Delete file"))
+            if (GUILayout.Button("Reset all"))
+                ResetAll();
+            if (isFileExists && GUILayout.Button("Delete file"))
             {
                 File.Delete(path);
                 firstLoadDone = false;
             }
             GUILayout.EndHorizontal();
 
+            isEditMode = GUILayout.Toggle(isEditMode, "Show all values");
+
+
 
             if (isEditMode)
             {
                 scroll = GUILayout.BeginScrollView(scroll, GUILayout.MinHeight(valueEditorHeight));
-                foreach (var item in guiOfValues)
+                foreach (var item in valueIdAndGuis)
                 {
-                    item();
+                    item.Value();
                 }
                 GUILayout.EndScrollView();
             }
@@ -214,15 +314,8 @@ namespace NipaPrefs
             GUILayout.EndVertical();
             GUI.DragWindow();
         }
+        #endregion
+
+        #endregion
     }
 }
-
-//else
-//{
-//    using (System.IO.StreamWriter file = new System.IO.StreamWriter(Application.dataPath + "/test.xml"))
-//    {
-//        file.WriteLine(string.Format("<{0}>{1}</{0}>", PARENT_ELEMENT, System.Environment.NewLine));
-//    }
-//    xml = XDocument.Load(Application.dataPath + "/test.xml");
-//    xmlElements = xml.Element(PARENT_ELEMENT);
-//}
