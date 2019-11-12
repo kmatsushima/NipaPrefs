@@ -19,7 +19,7 @@ namespace NipaPrefs.Hidden
         bool isTipShown;
         bool initialized;
         T savedValue;
-        Color guiColor;
+        Color guiColor = Color.white;
 
         public NipaValue(string managerId, string id, T defaultValue, string tip = "")
         {
@@ -48,6 +48,9 @@ namespace NipaPrefs.Hidden
 
         void GuiContent(bool isSlider, string title)
         {
+            guiColor = GUI.color;
+            GUILayout.BeginVertical();
+
             var isSavedValueLatest = IsSame(value, savedValue);
             var isDefault = IsSame(value, defaultValue);
             GUI.color = isSavedValueLatest ? Color.white : Color.yellow;
@@ -60,7 +63,6 @@ namespace NipaPrefs.Hidden
                 isEditMode = !isEditMode;
             GUILayout.EndHorizontal();
 
-            GUI.color = guiColor;
             if (isEditMode)
             {
                 using (var v = new GUILayout.VerticalScope("box"))
@@ -113,6 +115,9 @@ namespace NipaPrefs.Hidden
                     GUILayout.EndHorizontal();
                 }
             }
+
+            GUILayout.EndVertical();
+            GUI.color = guiColor;
         }
 
         public void Set(T value)

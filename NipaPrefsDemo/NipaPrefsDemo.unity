@@ -213,9 +213,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: transportPrefs
   rootDirEditor: 0
-  filePathFromRootDirEditor: NipaPrefsDemo/Prefs/Transport.xml
+  parentDirPathFromRootDirEditor: Prefs
+  fileNameWithExtensionEditor: TransportPrefs.xml
   rootDirStandalone: 3
-  filePathFromRootDirStandalone: Prefs/Transport.xml
+  parentDirPathFromRootDirStandalone: Prefs
+  fileNameWithExtensionEditorStandalone: TransportPrefs.xml
   enableManualUpdate: 0
   enableManualLoad: 0
   guiLayoutWindowId: 10
@@ -254,9 +256,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: enviromentPrefs
   rootDirEditor: 0
-  filePathFromRootDirEditor: NipaPrefsDemo/Prefs/Enviroment.xml
+  parentDirPathFromRootDirEditor: Prefs
+  fileNameWithExtensionEditor: EnviromentPrefs.xml
   rootDirStandalone: 3
-  filePathFromRootDirStandalone: Prefs/Enviroment.xml
+  parentDirPathFromRootDirStandalone: Prefs
+  fileNameWithExtensionEditorStandalone: EnviromentPrefs.xml
   enableManualUpdate: 1
   enableManualLoad: 0
   guiLayoutWindowId: 11

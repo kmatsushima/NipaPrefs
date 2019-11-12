@@ -12,7 +12,7 @@ namespace Nipa.Demo
         public static NipaFloat speed = new NipaFloat(DemoParam.TRANSPORT_PREFS, "jeepSpeed", 5f, "ジープのスピード");
         public static NipaFloat rotSpeed = new NipaFloat(DemoParam.TRANSPORT_PREFS, "jeepRotSpeed", 2f, "ジープの回転の速さ");
         public static NipaVector test = new NipaVector(DemoParam.TRANSPORT_PREFS, "test", Vector3.one, "ジープの回転の速さ");
-        NipaInt count = new NipaInt(DemoParam.TRANSPORT_PREFS, "jeepCount", 5);
+        NipaInt count = new NipaInt(DemoParam.TRANSPORT_PREFS, "jeepCount", 5,"ジープの数");
         [SerializeField] Jeep jeepPrefab;
         List<Jeep> jeeps = new List<Jeep>();
 
